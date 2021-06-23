@@ -1,25 +1,115 @@
 ---
-title: "Reproducible Research: Peer Assessment 1"
-output: 
-  html_document:
-    keep_md: true
+title: "PA1_template"
+author: "Danilo Imbimbo"
+date: "23/06/2021"
+output: html_document
 ---
 
+Assignement 1
 
-## Loading and preprocessing the data
+#Set Directory
+```{r, echo = TRUE}
+getwd()
+setwd("D:\\Documentos\\R\\Coursera\\reproducible_research")
 
+library(dplyr)
+library(ggplot2)
+library(stringr)
+library(data.table)
+```
 
+##question 1 - Code for reading in the dataset and/or processing the data
+```{r, echo = TRUE}
+activity_data <- read.csv("activity.csv", colClasses = c("numeric", "character", 
+                                                         "numeric"))
+#transform column date into date format
+activity_data$date <- strptime(activity_data$date, format = "%Y-%m-%d")
+```
 
-## What is mean total number of steps taken per day?
+##question 2 - Histogram of the total number of steps taken each day
+```{r, echo = TRUE}
+data_1 <- activity_data %>%  
+    group_by(date) %>%
+    summarize(steps = sum(steps)) 
+data_1 <- as.data.frame(data_1)
+hist(data_1$steps, col = "red",
+     main = "Frequency - Steps Taken",
+     xlab = "Steps")
+```
 
+##question 3 - Mean and median number of steps taken each day
+```{r, echo = TRUE}
+summary(data_1)
+#So, the mean is 10766 and the median 10765
+```
 
+##question 4 - Time series plot of the average number of steps taken
+```{r, echo = TRUE}
+data_mean_interval <- activity_data %>%  
+  group_by(interval) %>%
+  summarize(steps = mean(steps, na.rm = TRUE)) 
+data_mean_interval <- as.data.frame(data_mean_interval)
+p <- ggplot(data_mean_interval, aes(x = interval, y = steps)) +
+    geom_line(color="steelblue", size = 0.7) +
+    labs(title="Steps by interval - Mean", 
+         x = "5 minutes interval", y = "Steps Taken") +
+    theme_minimal() +
+    theme(plot.title = element_text(hjust = 0.4))
+p
+```
 
-## What is the average daily activity pattern?
+##question 5 - The 5-minute interval that, on average, contains the maximum number of steps
+```{r, echo = TRUE}
+row_max_steps <- which.max(data_mean_interval$steps)
+data_mean_interval[row_max_steps, ]
 
+#The interval is the 835, with 206,17 steps in average
+```
 
+##question 6 - Code to describe and show a strategy for imputing missing data
+```{r, echo = TRUE}
+sum(is.na(activity_data$steps))
+impute.mean <- function(x) replace(x, is.na(x), mean(x, na.rm = TRUE))
+setDT(activity_data)
+activity_data_no_na <- activity_data[, steps := impute.mean(steps),
+                                     by = interval]
+```
 
-## Imputing missing values
+##question 7 - Histogram of the total number of steps taken each day after missing values are imputed
+```{r, echo = TRUE}
+#used the mean from intervals
+activity_data_no_na <- as.data.frame(activity_data_no_na)
+data_2 <- activity_data_no_na %>%  
+  group_by(date) %>%
+  summarize(steps = sum(steps)) 
+hist(data_2$steps, col = "red",
+     main = "Frequency - Steps Taken",
+     xlab = "Steps")
+summary(data_2)
+#so the mean is 10766 and median 10766; compared to the exercise done before, we got the same mean and a median 1 point above 
+```
 
+##question 8 - Panel plot comparing the average number of steps taken per 5-minute interval across weekdays and weekends
+```{r, echo = TRUE}
+activity_data_no_na$type_of_day <- weekdays(activity_data_no_na$date)
 
+#transform days into factor "weekend" and "weekday", accordingly to names
+activity_data_no_na$type_of_day <- as.factor(ifelse(activity_data_no_na$type_of_day %in%
+                                            c("sábado", "domingo"), 
+                                          "weekend", "weekday"))
 
-## Are there differences in activity patterns between weekdays and weekends?
+#calulate mean by interval and weekend
+data_mean_interval_inputed <- activity_data_no_na %>%  
+  group_by(interval, type_of_day) %>% 
+  summarize(steps = mean(steps, na.rm = TRUE)) 
+
+library(lattice)
+xyplot(steps ~ interval | type_of_day, 
+       data_mean_interval_inputed, 
+       type = "l", 
+       grid = F,
+       layout = c(2, 1), 
+       xlab = "5 minute interval",
+       ylab = "Number of steps taken",
+       col = "dark green")
+```
