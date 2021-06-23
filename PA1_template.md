@@ -1,6 +1,6 @@
-Assignment 1
+# Reproducible Research: Peer Assessment 1
 
-\#Set Directory
+##### Set Directory
 
 ``` r
 getwd()
@@ -42,8 +42,7 @@ library(data.table)
     ## 
     ##     between, first, last
 
-\#\#question 1 - Code for reading in the dataset and/or processing the
-data
+#### question 1 - Code for reading in the dataset and/or processing the data
 
 ``` r
 activity_data <- read.csv("activity.csv", colClasses = c("numeric", "character", 
@@ -52,7 +51,7 @@ activity_data <- read.csv("activity.csv", colClasses = c("numeric", "character",
 activity_data$date <- strptime(activity_data$date, format = "%Y-%m-%d")
 ```
 
-\#\#question 2 - Histogram of the total number of steps taken each day
+##question 2 - Histogram of the total number of steps taken each day
 
 ``` r
 data_1 <- activity_data %>%  
@@ -66,7 +65,7 @@ hist(data_1$steps, col = "red",
 
 ![](PA1_template_files/figure-markdown_github/unnamed-chunk-3-1.png)
 
-\#\#question 3 - Mean and median number of steps taken each day
+#### question 3 - Mean and median number of steps taken each day
 
 ``` r
 summary(data_1)
@@ -85,7 +84,7 @@ summary(data_1)
 #So, the mean is 10766 and the median 10765
 ```
 
-\#\#question 4 - Time series plot of the average number of steps taken
+#### question 4 - Time series plot of the average number of steps taken
 
 ``` r
 data_mean_interval <- activity_data %>%  
@@ -103,8 +102,7 @@ p
 
 ![](PA1_template_files/figure-markdown_github/unnamed-chunk-5-1.png)
 
-\#\#question 5 - The 5-minute interval that, on average, contains the
-maximum number of steps
+#### question 5 - The 5-minute interval that, on average, contains the maximum number of steps
 
 ``` r
 row_max_steps <- which.max(data_mean_interval$steps)
@@ -118,8 +116,7 @@ data_mean_interval[row_max_steps, ]
 #The interval is the 835, with 206,17 steps in average
 ```
 
-\#\#question 6 - Code to describe and show a strategy for imputing
-missing data
+#### question 6 - Code to describe and show a strategy for imputing missing data
 
 ``` r
 sum(is.na(activity_data$steps))
@@ -134,8 +131,7 @@ activity_data_no_na <- activity_data[, steps := impute.mean(steps),
                                      by = interval]
 ```
 
-\#\#question 7 - Histogram of the total number of steps taken each day
-after missing values are imputed
+#### question 7 - Histogram of the total number of steps taken each day after missing values are imputed
 
 ``` r
 #used the mean from intervals
@@ -167,8 +163,7 @@ summary(data_2)
 #so the mean is 10766 and median 10766; compared to the exercise done before, we got the same mean and a median 1 point above 
 ```
 
-\#\#question 8 - Panel plot comparing the average number of steps taken
-per 5-minute interval across weekdays and weekends
+#### question 8 - Panel plot comparing the average number of steps taken per 5-minute interval across weekdays and weekends
 
 ``` r
 activity_data_no_na$type_of_day <- weekdays(activity_data_no_na$date)
